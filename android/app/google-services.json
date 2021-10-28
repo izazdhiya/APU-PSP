@@ -1,0 +1,39 @@
+{
+  "project_info": {
+    "project_number": "1002263744377",
+    "project_id": "apupsp",
+    "storage_bucket": "apupsp.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:1002263744377:android:c620ac1bbc399c3839e9a8",
+        "android_client_info": {
+          "package_name": "com.example.apupsp"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "1002263744377-geb0uohcdm8u37dnqq536mpf3av4ddgn.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyClqU0WRQvaMdqB2_nyQ11QCg87ao1xWQg"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "1002263744377-geb0uohcdm8u37dnqq536mpf3av4ddgn.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
