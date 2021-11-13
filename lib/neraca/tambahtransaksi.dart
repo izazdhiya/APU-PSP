@@ -3,7 +3,7 @@ import 'package:apupsp/neraca/neraca.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:flutter_datetime_picker/flutter_datetime_picker.dart';
+// import 'package:flutter_datetime_picker/flutter_datetime_picker.dart';
 
 class TambahTransaksi extends StatefulWidget {
   final String nama;
@@ -25,63 +25,19 @@ class _TambahTransaksiState extends State<TambahTransaksi> {
   String tipe = "";
   String jumlah = "";
   String keterangan = "";
-  String _date = "dd-mm-yyyy";
 
   TextEditingController _tipe = TextEditingController();
   TextEditingController _jumlah = TextEditingController();
   TextEditingController _keterangan = TextEditingController();
+
+  static var today = new DateTime.now();
+  String date = '${today.day} - ${today.month} - ${today.year}';
 
   @override
   void initState() {
     super.initState();
     //  _myActivity = '';
   }
-
-  // void simpanData() async {
-  //   if (_tipe.text == "" ||
-  //       _jumlah.text == "" ||
-  //       _keterangan.text == "" ||
-  //       _date == "dd-mm-yyyy") {
-  //     AlertDialog alert = AlertDialog(
-  //       content: Text("Harap isi Data!"),
-  //       actions: [
-  //         MaterialButton(
-  //             child: Text("OK"), onPressed: () => Navigator.of(context).pop()),
-  //       ],
-  //     );
-  //     showDialog(
-  //       context: context,
-  //       builder: (BuildContext context) {
-  //         return alert;
-  //       },
-  //     );
-  //   } else {
-  //     AlertDialog alert = AlertDialog(
-  //       content: Text("Data Berhasil Disimpan"),
-  //       actions: [
-  //         MaterialButton(
-  //             child: Text(
-  //               "OK",
-  //             ),
-  //             onPressed: () => Navigator.pushReplacement(
-  //                 context,
-  //                 MaterialPageRoute(
-  //                     builder: (context) => NeracaPage(
-  //                         nama: widget.nama,
-  //                         luaslahan: widget.luaslahan,
-  //                         jenislahan: widget.jenislahan))))
-  //       ],
-  //     );
-  //     showDialog(
-  //       context: context,
-  //       builder: (BuildContext context) {
-  //         return alert;
-  //       },
-  //     );
-  //   }
-  // }
-
-  //String _myActivity = "";
 
   var items = ["Pemasukan", "Pengeluaran"];
 
@@ -118,19 +74,7 @@ class _TambahTransaksiState extends State<TambahTransaksi> {
                     color: Color(0xFFF8B21C),
                     shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(10)),
-                    onPressed: () {
-                      DatePicker.showDatePicker(context,
-                          theme: DatePickerTheme(
-                            containerHeight: 210.0,
-                          ),
-                          showTitleActions: true,
-                          minTime: DateTime(2000, 1, 1),
-                          maxTime: DateTime(2030, 12, 31), onConfirm: (date) {
-                        print('confirm $date');
-                        _date = '${date.day} - ${date.month} - ${date.year}';
-                        setState(() {});
-                      }, currentTime: DateTime.now(), locale: LocaleType.en);
-                    },
+                    onPressed: () {},
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.spaceAround,
                       children: [
@@ -149,7 +93,7 @@ class _TambahTransaksiState extends State<TambahTransaksi> {
                                           color: Color(0xFFFAFAFA),
                                           fontSize: 10,
                                           fontWeight: FontWeight.w500))),
-                              Text("$_date",
+                              Text("$date",
                                   style: GoogleFonts.poppins(
                                       textStyle: TextStyle(
                                           color: Color(0xFFFAFAFA),
@@ -244,8 +188,7 @@ class _TambahTransaksiState extends State<TambahTransaksi> {
                                   onPressed: () {
                                     if (_tipe.text == "" ||
                                         _jumlah.text == "" ||
-                                        _keterangan.text == "" ||
-                                        _date == "dd-mm-yyyy") {
+                                        _keterangan.text == "") {
                                       AlertDialog alert = AlertDialog(
                                         content: Text("Harap isi Data!"),
                                         actions: [
@@ -263,14 +206,13 @@ class _TambahTransaksiState extends State<TambahTransaksi> {
                                       );
                                     } else {
                                       neraca.add({
-                                        'tanggal': _date,
+                                        'tanggal': DateTime.now(),
                                         'tipe': _tipe.text,
                                         'jumlah':
                                             int.tryParse(_jumlah.text) ?? 0,
                                         'keterangan': _keterangan.text,
                                       });
 
-                                      _date = 'dd-mm-yyyy';
                                       _tipe.text = '';
                                       _jumlah.text = '';
                                       _keterangan.text = '';
