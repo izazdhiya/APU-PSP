@@ -8,12 +8,12 @@ import 'package:google_fonts/google_fonts.dart';
 //import 'package:apupsp/inputdata.dart';
 import 'dart:async';
 
-class SplashScreenPage extends StatefulWidget {
+class Loading extends StatefulWidget {
   @override
-  _SplashScreenPageState createState() => _SplashScreenPageState();
+  _LoadingState createState() => _LoadingState();
 }
 
-class _SplashScreenPageState extends State<SplashScreenPage> {
+class _LoadingState extends State<Loading> {
   @override
   void initState() {
     super.initState();
@@ -26,9 +26,10 @@ class _SplashScreenPageState extends State<SplashScreenPage> {
     return Timer(duration, () {
       Navigator.of(context).pushReplacement(MaterialPageRoute(builder: (_) {
         if (data.docs.length == 0) {
-          return InputData();
+          return FormDataLahan();
         } else {
-          return HomePage(nama: "izaz", luaslahan: "1000", jenislahan: "padi");
+          return DashboardHome(
+              nama: "izaz", luaslahan: "1000", jenislahan: "padi");
         }
       }));
     });
