@@ -12,12 +12,12 @@ import 'package:intl/intl.dart';
 import 'modelweather.dart';
 import 'api.dart';
 
-class HomePage extends StatefulWidget {
+class DashboardHome extends StatefulWidget {
   final String nama;
   final String luaslahan;
   final String jenislahan;
 
-  const HomePage(
+  const DashboardHome(
       {Key? key,
       required this.nama,
       required this.luaslahan,
@@ -25,10 +25,10 @@ class HomePage extends StatefulWidget {
       : super(key: key);
 
   @override
-  _HomePageState createState() => _HomePageState();
+  _DashboardHomeState createState() => _DashboardHomeState();
 }
 
-class _HomePageState extends State<HomePage> {
+class _DashboardHomeState extends State<DashboardHome> {
   //Final referenceDatabase = FirebaseDatabase.instance;
 
   //var savedData = [];
