@@ -3,14 +3,14 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:apupsp/home/home.dart';
 
-class InputData extends StatefulWidget {
-  const InputData({Key? key}) : super(key: key);
+class FormDataLahan extends StatefulWidget {
+  const FormDataLahan({Key? key}) : super(key: key);
 
   @override
-  _InputDataState createState() => _InputDataState();
+  _FormDataLahanState createState() => _FormDataLahanState();
 }
 
-class _InputDataState extends State<InputData> {
+class _FormDataLahanState extends State<FormDataLahan> {
   String nama = "";
   String luaslahan = "";
   String jenislahan = "";
@@ -18,63 +18,6 @@ class _InputDataState extends State<InputData> {
   TextEditingController _nama = TextEditingController();
   TextEditingController _luaslahan = TextEditingController();
   TextEditingController _jenislahan = TextEditingController();
-
-  // void simpanData() async {
-  //   //SharedPreferences prefs = await SharedPreferences.getInstance();
-
-  //   if (_nama.text == "" || _luaslahan.text == "" || _jenislahan.text == "") {
-  //     AlertDialog alert = AlertDialog(
-  //       content: Text("Harap isi Data!"),
-  //       actions: [
-  //         MaterialButton(
-  //             child: Text("OK"), onPressed: () => Navigator.of(context).pop()),
-  //       ],
-  //     );
-  //     showDialog(
-  //       context: context,
-  //       builder: (BuildContext context) {
-  //         return alert;
-  //       },
-  //     );
-  //   } else {
-  //     //await prefs.setString("nama", _nama.text);
-  //     //await prefs.setString("luaslahan", _luaslahan.text);
-  //     //await prefs.setString("jenislahan", _jenislahan.text);
-  //     AlertDialog alert = AlertDialog(
-  //       title: Text("Konfirmasi"),
-  //       content: Text("Apakah Anda ingin menyimpan data lahan?"),
-  //       actions: [
-  //         MaterialButton(
-  //             child: Text(
-  //               "Batal",
-  //             ),
-  //             onPressed: () => Navigator.of(context).pop()),
-  //         MaterialButton(
-  //           child: Text("Simpan",
-  //               style: TextStyle(
-  //                 color: Color(0xFF3391B7),
-  //               )),
-  //           onPressed: () {
-  //             Navigator.pushReplacement(
-  //                 context,
-  //                 MaterialPageRoute(
-  //                     builder: (context) => HomePage(
-  //                           nama: _nama.text,
-  //                           luaslahan: _luaslahan.text,
-  //                           jenislahan: _jenislahan.text,
-  //                         )));
-  //           },
-  //         )
-  //       ],
-  //     );
-  //     showDialog(
-  //       context: context,
-  //       builder: (BuildContext context) {
-  //         return alert;
-  //       },
-  //     );
-  //   }
-  // }
 
   var items = ["padi", "jagung"];
 
@@ -201,16 +144,14 @@ class _InputDataState extends State<InputData> {
                                                     Navigator.pushReplacement(
                                                         context,
                                                         MaterialPageRoute(
-                                                            builder:
-                                                                (context) =>
-                                                                    HomePage(
-                                                                      nama:
-                                                                          "izaz",
-                                                                      luaslahan:
-                                                                          "1000",
-                                                                      jenislahan:
-                                                                          "padi",
-                                                                    )));
+                                                            builder: (context) =>
+                                                                DashboardHome(
+                                                                  nama: "izaz",
+                                                                  luaslahan:
+                                                                      "1000",
+                                                                  jenislahan:
+                                                                      "padi",
+                                                                )));
                                                     users.add({
                                                       'nama': _nama.text,
                                                       'luaslahan': int.tryParse(
