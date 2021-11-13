@@ -1,4 +1,5 @@
 import 'package:apupsp/home/home.dart';
+import 'package:apupsp/neraca/edittransaksi.dart';
 import 'package:apupsp/neraca/tambahtransaksi.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
@@ -23,65 +24,14 @@ class NeracaPage extends StatefulWidget {
 
 class _NeracaPageState extends State<NeracaPage> {
   static var today = new DateTime.now();
-  var formatedTanggal = new DateFormat.yMMMd().format(today);
+  static var yesterday = new DateTime.now().subtract(Duration(days: 1));
   String date = '${today.day} - ${today.month} - ${today.year}';
-  String yesterday = '${today.day} - ${today.month} - ${today.year}';
-
-  List list = [];
-  List pemasukan = [];
-  List pengeluaran = [];
-  num totalpemasukan = 0;
-  num totalpengeluaran = 0;
-
-  void fetchData() async {
-    var data = await FirebaseFirestore.instance.collection("neraca").get();
-    for (int i = 0; i < data.docs.length; i++) {
-      List model = [
-        data.docs[i].data()['tanggal'],
-        data.docs[i].data()['tipe'],
-        data.docs[i].data()['jumlah'],
-        data.docs[i].data()['keterangan']
-      ];
-      if (data.docs[i].data()['tanggal'] == '$date') {
-        if (data.docs[i].data()['tipe'] == "Pemasukan") {
-          pemasukan.add(data.docs[i].data()['jumlah']);
-        } else {
-          pengeluaran.add(data.docs[i].data()['jumlah']);
-        }
-      }
-      list.add(model);
-    }
-    setState(() {});
-  }
-
-  totalPemasukan() {
-    num a = 0;
-    for (var i = 0; i < pemasukan.length; i++) {
-      a = a + pemasukan[i];
-    }
-    totalpemasukan = a;
-    return totalpemasukan.toString();
-  }
-
-  totalPengeluaran() {
-    num a = 0;
-    for (var i = 0; i < pengeluaran.length; i++) {
-      a = a + pengeluaran[i];
-    }
-    totalpengeluaran = a;
-    return totalpengeluaran.toString();
-  }
-
-  @override
-  void initState() {
-    super.initState();
-    fetchData();
-  }
+  String date1 = '${yesterday.day} - ${yesterday.month} - ${yesterday.year}';
 
   @override
   Widget build(BuildContext context) {
-    // FirebaseFirestore firestore = FirebaseFirestore.instance;
-    // CollectionReference neraca = firestore.collection('neraca');
+    FirebaseFirestore firestore = FirebaseFirestore.instance;
+    CollectionReference neraca = firestore.collection('neraca');
     return Scaffold(
         appBar: AppBar(
           backgroundColor: Colors.transparent,
@@ -89,6 +39,12 @@ class _NeracaPageState extends State<NeracaPage> {
           leading: new IconButton(
               icon: new Icon(Icons.money_rounded, color: Colors.white),
               onPressed: () {}),
+          actions: <Widget>[
+            new IconButton(
+              icon: new Icon(Icons.layers, color: Colors.white),
+              onPressed: () {},
+            ),
+          ],
           title: Text("Laporan Neraca",
               style: GoogleFonts.poppins(
                   textStyle: TextStyle(
@@ -106,7 +62,7 @@ class _NeracaPageState extends State<NeracaPage> {
             child: Column(children: [
               Container(
                   width: double.infinity,
-                  height: 250,
+                  height: 300,
                   margin: EdgeInsets.only(left: 10, top: 80, right: 10),
                   padding: EdgeInsets.all(5),
                   decoration: BoxDecoration(
@@ -153,12 +109,47 @@ class _NeracaPageState extends State<NeracaPage> {
                                               color: Color(0xFF808080),
                                               fontSize: 12,
                                               fontWeight: FontWeight.w500))),
-                                  Text('Rp ' + totalPengeluaran(),
-                                      style: GoogleFonts.poppins(
-                                          textStyle: TextStyle(
-                                              color: Color(0xFFDF2828),
-                                              fontSize: 12,
-                                              fontWeight: FontWeight.w600)))
+                                  StreamBuilder<QuerySnapshot>(
+                                    stream: neraca
+                                        .where("tipe", isEqualTo: "Pengeluaran")
+                                        .where("tanggal",
+                                            isGreaterThan: DateTime.now()
+                                                .subtract(Duration(days: 1)))
+                                        .snapshots(),
+                                    builder: (context, snapshot) {
+                                      if (snapshot.hasData) {
+                                        List myDocCount = snapshot.data!.docs
+                                            .map((e) => e['jumlah'])
+                                            .toList();
+                                        num jumlahtransaksi = 0;
+                                        for (var i in myDocCount) {
+                                          jumlahtransaksi = jumlahtransaksi + i;
+                                        }
+                                        return Text(
+                                            NumberFormat.simpleCurrency(
+                                                    locale: 'id')
+                                                .format(jumlahtransaksi),
+                                            style: GoogleFonts.poppins(
+                                                textStyle: TextStyle(
+                                                    color: Color(0xFFDF2828),
+                                                    fontSize: 12,
+                                                    fontWeight:
+                                                        FontWeight.w600)));
+                                      } else {
+                                        return Center(
+                                            child: Center(
+                                                child: Text('Rp 0',
+                                                    style: GoogleFonts.poppins(
+                                                        textStyle: TextStyle(
+                                                            color: Color(
+                                                                0xFFDF2828),
+                                                            fontSize: 12,
+                                                            fontWeight:
+                                                                FontWeight
+                                                                    .w600)))));
+                                      }
+                                    },
+                                  ),
                                 ],
                               ),
                             ),
@@ -171,12 +162,47 @@ class _NeracaPageState extends State<NeracaPage> {
                                               color: Color(0xFF808080),
                                               fontSize: 12,
                                               fontWeight: FontWeight.w500))),
-                                  Text('Rp ' + totalPemasukan(),
-                                      style: GoogleFonts.poppins(
-                                          textStyle: TextStyle(
-                                              color: Color(0xFF44B210),
-                                              fontSize: 12,
-                                              fontWeight: FontWeight.w600)))
+                                  StreamBuilder<QuerySnapshot>(
+                                    stream: neraca
+                                        .where('tanggal',
+                                            isGreaterThan: DateTime.now()
+                                                .subtract(Duration(days: 1)))
+                                        .where('tipe', isEqualTo: "Pemasukan")
+                                        .snapshots(),
+                                    builder: (_, snapshot) {
+                                      if (snapshot.hasData) {
+                                        List myDocCount = snapshot.data!.docs
+                                            .map((e) => e['jumlah'])
+                                            .toList();
+                                        num jumlahtransaksi = 0;
+                                        for (var i in myDocCount) {
+                                          jumlahtransaksi = jumlahtransaksi + i;
+                                        }
+                                        return Text(
+                                            NumberFormat.simpleCurrency(
+                                                    locale: 'id')
+                                                .format(jumlahtransaksi),
+                                            style: GoogleFonts.poppins(
+                                                textStyle: TextStyle(
+                                                    color: Color(0xFF44B210),
+                                                    fontSize: 12,
+                                                    fontWeight:
+                                                        FontWeight.w600)));
+                                      } else {
+                                        return Center(
+                                            child: Center(
+                                                child: Text('Rp 0',
+                                                    style: GoogleFonts.poppins(
+                                                        textStyle: TextStyle(
+                                                            color: Color(
+                                                                0xFF44B210),
+                                                            fontSize: 12,
+                                                            fontWeight:
+                                                                FontWeight
+                                                                    .w600)))));
+                                      }
+                                    },
+                                  ),
                                 ],
                               ),
                             )
@@ -191,57 +217,39 @@ class _NeracaPageState extends State<NeracaPage> {
                       ),
                       Container(
                           width: double.infinity,
-                          height: 180,
+                          height: 220,
                           padding: EdgeInsets.only(left: 10, right: 10),
-                          child: list.length == 0
-                              ? Center(child: Text("Tidak Ada Data"))
-                              : ListView.builder(
-                                  itemCount: list.length,
-                                  itemBuilder: (_, index) {
-                                    if (list[index][0] == '$date') {
-                                      return TextButton(
-                                          onPressed: () {},
-                                          child: Container(
-                                            margin: EdgeInsets.only(top: 0),
-                                            child: Row(
-                                                mainAxisAlignment:
-                                                    MainAxisAlignment
-                                                        .spaceBetween,
-                                                children: [
-                                                  Text(
-                                                      list[index][3].toString(),
-                                                      style: GoogleFonts.poppins(
-                                                          textStyle: TextStyle(
-                                                              color: Color(
-                                                                  0xFF808080),
-                                                              fontSize: 12,
-                                                              fontWeight:
-                                                                  FontWeight
-                                                                      .w500))),
-                                                  Text(
-                                                      'Rp ' +
-                                                          list[index][2]
-                                                              .toString(),
-                                                      style: GoogleFonts.poppins(
-                                                          textStyle: TextStyle(
-                                                              color: list[index]
-                                                                          [1] ==
-                                                                      "Pemasukan"
-                                                                  ? Color(
-                                                                      0xFF44B210)
-                                                                  : Color(
-                                                                      0xFFDF2828),
-                                                              fontSize: 12,
-                                                              fontWeight:
-                                                                  FontWeight
-                                                                      .w500)))
-                                                ]),
-                                          ));
-                                    } else {
-                                      return Container();
-                                    }
-                                  },
-                                ))
+                          child: ListView(
+                            children: [
+                              StreamBuilder<QuerySnapshot>(
+                                stream: neraca
+                                    .where('tanggal',
+                                        isGreaterThan: DateTime.now()
+                                            .subtract(Duration(days: 1)))
+                                    .orderBy('tanggal', descending: true)
+                                    .snapshots(),
+                                builder: (_, snapshot) {
+                                  if (snapshot.hasData) {
+                                    return Column(
+                                      children: snapshot.data!.docs
+                                          .map((e) => ItemCard(
+                                              e['keterangan'],
+                                              e['tipe'],
+                                              e['jumlah'],
+                                              e,
+                                              widget.nama,
+                                              widget.luaslahan,
+                                              widget.jenislahan))
+                                          .toList(),
+                                    );
+                                  } else {
+                                    return Center(
+                                        child: Center(child: Text('Loading')));
+                                  }
+                                },
+                              )
+                            ],
+                          ))
                     ],
                   )),
               Container(
@@ -282,110 +290,104 @@ class _NeracaPageState extends State<NeracaPage> {
               Container(
                 margin: EdgeInsets.only(left: 10, right: 10),
                 width: double.infinity,
-                height: 200,
+                height: 100,
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    for (int i = 0; i < 2; i++)
-                      Container(
-                        margin: EdgeInsets.only(top: 5, bottom: 5),
-                        width: double.infinity,
-                        height: 50,
-                        decoration: BoxDecoration(
-                          color: Color(0xFFFAFAFA),
-                          borderRadius: BorderRadius.circular(10),
-                          boxShadow: [
-                            BoxShadow(
-                              color: Colors.black12,
-                              spreadRadius: 2,
-                              blurRadius: 2,
-                            )
-                          ],
-                        ),
-                        child: Row(
-                          children: [
-                            Container(
-                                //margin: EdgeInsets.only(right: 10),
-                                height: 50,
-                                width: 80,
-                                decoration: BoxDecoration(
-                                    color: Color(0xFF808080),
-                                    borderRadius: BorderRadius.only(
-                                        topLeft: Radius.circular(10),
-                                        bottomLeft: Radius.circular(10))),
-                                child: Center(
-                                  child: Text(formatedTanggal.toString(),
-                                      style: GoogleFonts.poppins(
-                                          textStyle: TextStyle(
-                                              color: Color(0xFFFAFAFA),
-                                              fontSize: 12,
-                                              fontWeight: FontWeight.w600))),
-                                )),
-                            Container(
-                                width: 250,
-                                child: Row(
-                                  mainAxisAlignment:
-                                      MainAxisAlignment.spaceAround,
-                                  children: [
-                                    Container(
-                                        margin: EdgeInsets.only(
-                                            left: 10, right: 10),
-                                        child: Column(
-                                          crossAxisAlignment:
-                                              CrossAxisAlignment.center,
-                                          mainAxisAlignment:
-                                              MainAxisAlignment.center,
-                                          children: [
-                                            Text("Pengeluaran",
-                                                style: GoogleFonts.poppins(
-                                                    textStyle: TextStyle(
-                                                        color:
-                                                            Color(0xFF808080),
-                                                        fontSize: 12,
-                                                        fontWeight:
-                                                            FontWeight.w500))),
-                                            Text("Rp 500000",
-                                                style: GoogleFonts.poppins(
-                                                    textStyle: TextStyle(
-                                                        color:
-                                                            Color(0xFFDF2828),
-                                                        fontSize: 12,
-                                                        fontWeight:
-                                                            FontWeight.w600)))
-                                          ],
-                                        )),
-                                    Container(
-                                        margin: EdgeInsets.only(
-                                            left: 10, right: 10),
-                                        child: Column(
-                                          crossAxisAlignment:
-                                              CrossAxisAlignment.center,
-                                          mainAxisAlignment:
-                                              MainAxisAlignment.center,
-                                          children: [
-                                            Text("Pemasukan",
-                                                style: GoogleFonts.poppins(
-                                                    textStyle: TextStyle(
-                                                        color:
-                                                            Color(0xFF808080),
-                                                        fontSize: 12,
-                                                        fontWeight:
-                                                            FontWeight.w500))),
-                                            Text("Rp 500000",
-                                                style: GoogleFonts.poppins(
-                                                    textStyle: TextStyle(
-                                                        color:
-                                                            Color(0xFF44B210),
-                                                        fontSize: 12,
-                                                        fontWeight:
-                                                            FontWeight.w600)))
-                                          ],
-                                        ))
-                                  ],
-                                ))
-                          ],
-                        ),
-                      )
+                    Container(
+                      margin: EdgeInsets.only(top: 5, bottom: 5),
+                      width: double.infinity,
+                      height: 50,
+                      decoration: BoxDecoration(
+                        color: Color(0xFFFAFAFA),
+                        borderRadius: BorderRadius.circular(10),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black12,
+                            spreadRadius: 2,
+                            blurRadius: 2,
+                          )
+                        ],
+                      ),
+                      child: Row(
+                        children: [
+                          Container(
+                              height: 50,
+                              width: 80,
+                              decoration: BoxDecoration(
+                                  color: Color(0xFF808080),
+                                  borderRadius: BorderRadius.only(
+                                      topLeft: Radius.circular(10),
+                                      bottomLeft: Radius.circular(10))),
+                              child: Center(
+                                child: Text('$date1',
+                                    style: GoogleFonts.poppins(
+                                        textStyle: TextStyle(
+                                            color: Color(0xFFFAFAFA),
+                                            fontSize: 12,
+                                            fontWeight: FontWeight.w600))),
+                              )),
+                          Container(
+                              width: 250,
+                              child: Row(
+                                mainAxisAlignment:
+                                    MainAxisAlignment.spaceAround,
+                                children: [
+                                  Container(
+                                      margin:
+                                          EdgeInsets.only(left: 10, right: 10),
+                                      child: Column(
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.center,
+                                        mainAxisAlignment:
+                                            MainAxisAlignment.center,
+                                        children: [
+                                          Text("Pengeluaran",
+                                              style: GoogleFonts.poppins(
+                                                  textStyle: TextStyle(
+                                                      color: Color(0xFF808080),
+                                                      fontSize: 12,
+                                                      fontWeight:
+                                                          FontWeight.w500))),
+                                          Text("Rp ",
+                                              style: GoogleFonts.poppins(
+                                                  textStyle: TextStyle(
+                                                      color: Color(0xFFDF2828),
+                                                      fontSize: 12,
+                                                      fontWeight:
+                                                          FontWeight.w600)))
+                                        ],
+                                      )),
+                                  Container(
+                                      margin:
+                                          EdgeInsets.only(left: 10, right: 10),
+                                      child: Column(
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.center,
+                                        mainAxisAlignment:
+                                            MainAxisAlignment.center,
+                                        children: [
+                                          Text("Pemasukan",
+                                              style: GoogleFonts.poppins(
+                                                  textStyle: TextStyle(
+                                                      color: Color(0xFF808080),
+                                                      fontSize: 12,
+                                                      fontWeight:
+                                                          FontWeight.w500))),
+                                          Text("Rp ",
+                                              style: GoogleFonts.poppins(
+                                                  textStyle: TextStyle(
+                                                      color: Color(0xFF44B210),
+                                                      fontSize: 12,
+                                                      fontWeight:
+                                                          FontWeight.w600)))
+                                        ],
+                                      ))
+                                ],
+                              ))
+                        ],
+                      ),
+                    )
                   ],
                 ),
               )
@@ -413,7 +415,7 @@ class _NeracaPageState extends State<NeracaPage> {
                       Navigator.pushReplacement(
                           context,
                           MaterialPageRoute(
-                              builder: (context) => HomePage(
+                              builder: (context) => DashboardHome(
                                   nama: widget.nama,
                                   luaslahan: widget.luaslahan,
                                   jenislahan: widget.jenislahan)));
@@ -440,48 +442,144 @@ class _NeracaPageState extends State<NeracaPage> {
   }
 }
 
-// class ItemTransaksi extends StatelessWidget {
-//   final List listtransaksi;
+class ItemCard extends StatelessWidget {
+  final String keterangan;
+  final String tipe;
+  final int jumlah;
+  final e;
+  final String nama;
+  final String luaslahan;
+  final String jenislahan;
 
-//   const ItemTransaksi({Key? key, required this.listtransaksi})
-//       : super(key: key);
+  ItemCard(this.keterangan, this.tipe, this.jumlah, this.e, this.nama,
+      this.luaslahan, this.jenislahan);
 
-//   @override
-//   Widget build(BuildContext context) {
-//     return ListView.builder(
-//         itemCount: listtransaksi.length,
-//         itemBuilder: (context, index) {
-//           String keterangan = listtransaksi.data["keterangan"].toString();
-//         });
-//   }
-// }
-
-// class Neraca {
-//   final String tanggal;
-//   final String tipe;
-//   final int jumlah;
-//   final double keterangan;
-
-//   Neraca({
-//     required this.tanggal, 
-//     required this.tipe, 
-//     required this.jumlah, 
-//     required this.keterangan})
-
-//   Neraca.fromSnapshot(DocumentSnapshot snapshot)
-//       : assert(snapshot != null),
-//         tanggal = snapshot.data()['tanggal'],
-//         tipe = snapshot.data()['tipe'],
-//         jumlah = snapshot.data()['jumlah'],
-//         keterangan = snapshot.data()['keterangan'];
-
-//   factory Neraca.random() {
-//     return Neraca(
-//       tanggal: getRandomCategory(),
-//       city: getRandomCity(),
-//       name: getRandomName(),
-//       price: Random().nextInt(3) + 1,
-//       photo: getRandomPhoto(),
-//     );
-//   }
-// }
+  @override
+  Widget build(BuildContext context) {
+    FirebaseFirestore firestore = FirebaseFirestore.instance;
+    CollectionReference neraca = firestore.collection('neraca');
+    return Container(
+      width: double.infinity,
+      margin: EdgeInsets.only(top: 5, bottom: 5),
+      padding: EdgeInsets.only(left: 10, top: 5, bottom: 5),
+      decoration: BoxDecoration(
+        color: Color(0xFFFAFAFA),
+        borderRadius: BorderRadius.circular(10),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black12,
+            spreadRadius: 3,
+            blurRadius: 3,
+          )
+        ],
+      ),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              SizedBox(
+                width: MediaQuery.of(context).size.width * 0.5,
+                child: Text(keterangan,
+                    style: GoogleFonts.poppins(
+                        fontWeight: FontWeight.w600, fontSize: 14)),
+              ),
+              SizedBox(
+                width: MediaQuery.of(context).size.width * 0.5,
+                child: Text(
+                    NumberFormat.simpleCurrency(locale: 'id').format(jumlah),
+                    style: GoogleFonts.poppins(
+                        color: tipe == "Pemasukan"
+                            ? Color(0xFF44B210)
+                            : Color(0xFFDF2828),
+                        fontWeight: FontWeight.w500,
+                        fontSize: 12)),
+              ),
+            ],
+          ),
+          Row(
+            children: [
+              SizedBox(
+                height: 40,
+                width: 60,
+                child: MaterialButton(
+                    shape: CircleBorder(),
+                    color: Colors.yellow[600],
+                    child: Center(
+                        child: Icon(
+                      Icons.edit,
+                      color: Colors.white,
+                    )),
+                    onPressed: () {
+                      Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                              builder: (context) => EditTransaksi(
+                                  keterangan: keterangan,
+                                  jumlah: jumlah,
+                                  tipe: tipe,
+                                  e: e,
+                                  nama: nama,
+                                  luaslahan: luaslahan,
+                                  jenislahan: jenislahan)));
+                    }),
+              ),
+              SizedBox(
+                height: 40,
+                width: 60,
+                child: MaterialButton(
+                    shape: CircleBorder(),
+                    color: Colors.red[900],
+                    child: Center(
+                        child: Icon(
+                      Icons.delete,
+                      color: Colors.white,
+                    )),
+                    onPressed: () {
+                      AlertDialog alert = AlertDialog(
+                        title: Text("Konfirmasi"),
+                        content: Text("Apakah Anda ingn menghapus transaksi?"),
+                        actions: [
+                          MaterialButton(
+                            color: Color(0xFFC4C4C4),
+                            child: Text("Batal",
+                                style: TextStyle(
+                                  color: Color(0xFFF8B21C),
+                                )),
+                            onPressed: () {
+                              Navigator.of(context).pop();
+                            },
+                          ),
+                          MaterialButton(
+                            color: Color(0xFFF8B21C),
+                            child: Text("Hapus",
+                                style: TextStyle(
+                                  color: Color(0xFFFAFAFA),
+                                )),
+                            onPressed: () {
+                              neraca.doc(e.id).delete();
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                const SnackBar(
+                                    content: Text('Data berhasil dihapus!')),
+                              );
+                              Navigator.of(context).pop();
+                            },
+                          )
+                        ],
+                      );
+                      showDialog(
+                        context: context,
+                        builder: (BuildContext context) {
+                          return alert;
+                        },
+                      );
+                    }),
+              )
+            ],
+          )
+        ],
+      ),
+    );
+  }
+}
