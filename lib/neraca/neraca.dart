@@ -1,28 +1,24 @@
 import 'package:apupsp/home/home.dart';
 import 'package:apupsp/neraca/edittransaksi.dart';
+import 'package:apupsp/neraca/laporanakhir.dart';
+import 'package:apupsp/neraca/lihattransaksi.dart';
 import 'package:apupsp/neraca/tambahtransaksi.dart';
+import 'package:apupsp/user/user.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
 
-class NeracaPage extends StatefulWidget {
-  final String nama;
-  final String luaslahan;
-  final String jenislahan;
-
-  const NeracaPage(
-      {Key? key,
-      required this.nama,
-      required this.luaslahan,
-      required this.jenislahan})
-      : super(key: key);
+class LaporanNeraca extends StatefulWidget {
+  const LaporanNeraca({
+    Key? key,
+  }) : super(key: key);
 
   @override
-  _NeracaPageState createState() => _NeracaPageState();
+  _LaporanNeracaState createState() => _LaporanNeracaState();
 }
 
-class _NeracaPageState extends State<NeracaPage> {
+class _LaporanNeracaState extends State<LaporanNeraca> {
   static var today = new DateTime.now();
   static var yesterday = new DateTime.now().subtract(Duration(days: 1));
   String date = '${today.day} - ${today.month} - ${today.year}';
@@ -40,10 +36,52 @@ class _NeracaPageState extends State<NeracaPage> {
               icon: new Icon(Icons.money_rounded, color: Colors.white),
               onPressed: () {}),
           actions: <Widget>[
-            new IconButton(
-              icon: new Icon(Icons.layers, color: Colors.white),
-              onPressed: () {},
-            ),
+            Padding(
+                padding: EdgeInsets.only(right: 10),
+                child: PopupMenuButton(
+                    itemBuilder: (context) => [
+                          PopupMenuItem(
+                              child: MaterialButton(
+                            minWidth: 40,
+                            color: Color(0xFFF8B21C),
+                            shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(10)),
+                            onPressed: () {
+                              Navigator.pushReplacement(
+                                  context,
+                                  MaterialPageRoute(
+                                      builder: (context) => LihatTransaksi()));
+                            },
+                            child: Text("Lihat Transaksi",
+                                style: GoogleFonts.poppins(
+                                    textStyle: TextStyle(
+                                        color: Color(0xFFFAFAFA),
+                                        fontSize: 14,
+                                        fontWeight: FontWeight.w500))),
+                          )),
+                          PopupMenuItem(
+                              child: MaterialButton(
+                            minWidth: 40,
+                            color: Color(0xFFF8B21C),
+                            shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(10)),
+                            onPressed: () {
+                              Navigator.pushReplacement(
+                                  context,
+                                  MaterialPageRoute(
+                                      builder: (context) => LaporanAkhir()));
+                            },
+                            child: Text("Laporan Akhir",
+                                style: GoogleFonts.poppins(
+                                    textStyle: TextStyle(
+                                        color: Color(0xFFFAFAFA),
+                                        fontSize: 14,
+                                        fontWeight: FontWeight.w500))),
+                          )),
+                        ],
+                    child: Icon(
+                      Icons.layers,
+                    )))
           ],
           title: Text("Laporan Neraca",
               style: GoogleFonts.poppins(
@@ -91,7 +129,8 @@ class _NeracaPageState extends State<NeracaPage> {
                                               color: Color(0xFF808080),
                                               fontSize: 12,
                                               fontWeight: FontWeight.w500))),
-                                  Text('$date',
+                                  Text(
+                                      DateFormat.yMMMd().format(DateTime.now()),
                                       style: GoogleFonts.poppins(
                                           textStyle: TextStyle(
                                               color: Color(0xFF808080),
@@ -111,7 +150,6 @@ class _NeracaPageState extends State<NeracaPage> {
                                               fontWeight: FontWeight.w500))),
                                   StreamBuilder<QuerySnapshot>(
                                     stream: neraca
-                                        .where("tipe", isEqualTo: "Pengeluaran")
                                         .where("tanggal",
                                             isGreaterThan: DateTime.now()
                                                 .subtract(Duration(days: 1)))
@@ -119,11 +157,23 @@ class _NeracaPageState extends State<NeracaPage> {
                                     builder: (context, snapshot) {
                                       if (snapshot.hasData) {
                                         List myDocCount = snapshot.data!.docs
-                                            .map((e) => e['jumlah'])
+                                            .map((e) => [
+                                                  e['jumlah'],
+                                                  e['tipe'],
+                                                  e['tanggal']
+                                                ])
                                             .toList();
                                         num jumlahtransaksi = 0;
                                         for (var i in myDocCount) {
-                                          jumlahtransaksi = jumlahtransaksi + i;
+                                          if (DateFormat.yMMMd()
+                                                  .format(i[2].toDate()) ==
+                                              DateFormat.yMMMd()
+                                                  .format(DateTime.now())) {
+                                            if (i[1] == "Pengeluaran") {
+                                              jumlahtransaksi =
+                                                  jumlahtransaksi + i[0];
+                                            }
+                                          }
                                         }
                                         return Text(
                                             NumberFormat.simpleCurrency(
@@ -163,20 +213,27 @@ class _NeracaPageState extends State<NeracaPage> {
                                               fontSize: 12,
                                               fontWeight: FontWeight.w500))),
                                   StreamBuilder<QuerySnapshot>(
-                                    stream: neraca
-                                        .where('tanggal',
-                                            isGreaterThan: DateTime.now()
-                                                .subtract(Duration(days: 1)))
-                                        .where('tipe', isEqualTo: "Pemasukan")
-                                        .snapshots(),
+                                    stream: neraca.snapshots(),
                                     builder: (_, snapshot) {
                                       if (snapshot.hasData) {
                                         List myDocCount = snapshot.data!.docs
-                                            .map((e) => e['jumlah'])
+                                            .map((e) => [
+                                                  e['jumlah'],
+                                                  e['tipe'],
+                                                  e['tanggal']
+                                                ])
                                             .toList();
                                         num jumlahtransaksi = 0;
                                         for (var i in myDocCount) {
-                                          jumlahtransaksi = jumlahtransaksi + i;
+                                          if (DateFormat.yMMMd()
+                                                  .format(i[2].toDate()) ==
+                                              DateFormat.yMMMd()
+                                                  .format(DateTime.now())) {
+                                            if (i[1] == "Pemasukan") {
+                                              jumlahtransaksi =
+                                                  jumlahtransaksi + i[0];
+                                            }
+                                          }
                                         }
                                         return Text(
                                             NumberFormat.simpleCurrency(
@@ -233,13 +290,12 @@ class _NeracaPageState extends State<NeracaPage> {
                                     return Column(
                                       children: snapshot.data!.docs
                                           .map((e) => ItemCard(
-                                              e['keterangan'],
-                                              e['tipe'],
-                                              e['jumlah'],
-                                              e,
-                                              widget.nama,
-                                              widget.luaslahan,
-                                              widget.jenislahan))
+                                                e['tanggal'],
+                                                e['keterangan'],
+                                                e['tipe'],
+                                                e['jumlah'],
+                                                e,
+                                              ))
                                           .toList(),
                                     );
                                   } else {
@@ -266,10 +322,7 @@ class _NeracaPageState extends State<NeracaPage> {
                           Navigator.push(
                               context,
                               MaterialPageRoute(
-                                  builder: (context) => TambahTransaksi(
-                                      nama: widget.nama,
-                                      luaslahan: widget.luaslahan,
-                                      jenislahan: widget.jenislahan)));
+                                  builder: (context) => TambahTransaksi()));
                         },
                         child: Row(
                           mainAxisAlignment: MainAxisAlignment.spaceAround,
@@ -320,7 +373,11 @@ class _NeracaPageState extends State<NeracaPage> {
                                       topLeft: Radius.circular(10),
                                       bottomLeft: Radius.circular(10))),
                               child: Center(
-                                child: Text('$date1',
+                                child: Text(
+                                    DateFormat.yMMMd()
+                                        .format(DateTime.now()
+                                            .subtract(Duration(days: 1)))
+                                        .toString(),
                                     style: GoogleFonts.poppins(
                                         textStyle: TextStyle(
                                             color: Color(0xFFFAFAFA),
@@ -349,13 +406,62 @@ class _NeracaPageState extends State<NeracaPage> {
                                                       fontSize: 12,
                                                       fontWeight:
                                                           FontWeight.w500))),
-                                          Text("Rp ",
-                                              style: GoogleFonts.poppins(
-                                                  textStyle: TextStyle(
-                                                      color: Color(0xFFDF2828),
-                                                      fontSize: 12,
-                                                      fontWeight:
-                                                          FontWeight.w600)))
+                                          StreamBuilder<QuerySnapshot>(
+                                            stream: neraca.snapshots(),
+                                            builder: (context, snapshot) {
+                                              if (snapshot.hasData) {
+                                                List myDocCount = snapshot
+                                                    .data!.docs
+                                                    .map((e) => [
+                                                          e['jumlah'],
+                                                          e['tipe'],
+                                                          e['tanggal']
+                                                        ])
+                                                    .toList();
+                                                num jumlahtransaksi = 0;
+                                                for (var i in myDocCount) {
+                                                  if (DateFormat.yMMMd().format(
+                                                          i[2].toDate()) ==
+                                                      DateFormat.yMMMd().format(
+                                                          DateTime.now()
+                                                              .subtract(Duration(
+                                                                  days: 1)))) {
+                                                    if (i[1] == "Pengeluaran") {
+                                                      jumlahtransaksi =
+                                                          jumlahtransaksi +
+                                                              i[0];
+                                                    }
+                                                  }
+                                                }
+                                                return Text(
+                                                    NumberFormat.simpleCurrency(
+                                                            locale: 'id')
+                                                        .format(
+                                                            jumlahtransaksi),
+                                                    style: GoogleFonts.poppins(
+                                                        textStyle: TextStyle(
+                                                            color: Color(
+                                                                0xFFDF2828),
+                                                            fontSize: 12,
+                                                            fontWeight:
+                                                                FontWeight
+                                                                    .w600)));
+                                              } else {
+                                                return Center(
+                                                    child: Center(
+                                                        child: Text('Rp 0',
+                                                            style: GoogleFonts.poppins(
+                                                                textStyle: TextStyle(
+                                                                    color: Color(
+                                                                        0xFFDF2828),
+                                                                    fontSize:
+                                                                        12,
+                                                                    fontWeight:
+                                                                        FontWeight
+                                                                            .w600)))));
+                                              }
+                                            },
+                                          ),
                                         ],
                                       )),
                                   Container(
@@ -374,13 +480,67 @@ class _NeracaPageState extends State<NeracaPage> {
                                                       fontSize: 12,
                                                       fontWeight:
                                                           FontWeight.w500))),
-                                          Text("Rp ",
-                                              style: GoogleFonts.poppins(
-                                                  textStyle: TextStyle(
-                                                      color: Color(0xFF44B210),
-                                                      fontSize: 12,
-                                                      fontWeight:
-                                                          FontWeight.w600)))
+                                          StreamBuilder<QuerySnapshot>(
+                                            stream: neraca
+                                                // .where("tanggal",
+                                                //     isGreaterThan:
+                                                //         DateTime.now().subtract(
+                                                //             Duration(days: 2)))
+                                                .snapshots(),
+                                            builder: (context, snapshot) {
+                                              if (snapshot.hasData) {
+                                                List myDocCount = snapshot
+                                                    .data!.docs
+                                                    .map((e) => [
+                                                          e['jumlah'],
+                                                          e['tipe'],
+                                                          e['tanggal']
+                                                        ])
+                                                    .toList();
+                                                num jumlahtransaksi = 0;
+                                                for (var i in myDocCount) {
+                                                  if (DateFormat.yMMMd().format(
+                                                          i[2].toDate()) ==
+                                                      DateFormat.yMMMd().format(
+                                                          DateTime.now()
+                                                              .subtract(Duration(
+                                                                  days: 1)))) {
+                                                    if (i[1] == "Pemasukan") {
+                                                      jumlahtransaksi =
+                                                          jumlahtransaksi +
+                                                              i[0];
+                                                    }
+                                                  }
+                                                }
+                                                return Text(
+                                                    NumberFormat.simpleCurrency(
+                                                            locale: 'id')
+                                                        .format(
+                                                            jumlahtransaksi),
+                                                    style: GoogleFonts.poppins(
+                                                        textStyle: TextStyle(
+                                                            color: Color(
+                                                                0xFF44B210),
+                                                            fontSize: 12,
+                                                            fontWeight:
+                                                                FontWeight
+                                                                    .w600)));
+                                              } else {
+                                                return Center(
+                                                    child: Center(
+                                                        child: Text('Rp 0',
+                                                            style: GoogleFonts.poppins(
+                                                                textStyle: TextStyle(
+                                                                    color: Color(
+                                                                        0xFF44B210),
+                                                                    fontSize:
+                                                                        12,
+                                                                    fontWeight:
+                                                                        FontWeight
+                                                                            .w600)))));
+                                              }
+                                            },
+                                          ),
                                         ],
                                       ))
                                 ],
@@ -415,10 +575,7 @@ class _NeracaPageState extends State<NeracaPage> {
                       Navigator.pushReplacement(
                           context,
                           MaterialPageRoute(
-                              builder: (context) => DashboardHome(
-                                  nama: widget.nama,
-                                  luaslahan: widget.luaslahan,
-                                  jenislahan: widget.jenislahan)));
+                              builder: (context) => DashboardHome()));
                     }),
                 MaterialButton(
                     height: 50,
@@ -434,7 +591,10 @@ class _NeracaPageState extends State<NeracaPage> {
                     minWidth: 50,
                     textColor: Color(0xFFFAFAFA),
                     child: Icon(Icons.person, size: 30),
-                    onPressed: () {})
+                    onPressed: () {
+                      Navigator.push(context,
+                          MaterialPageRoute(builder: (context) => UserPage()));
+                    })
               ],
             ),
           ),
@@ -443,21 +603,28 @@ class _NeracaPageState extends State<NeracaPage> {
 }
 
 class ItemCard extends StatelessWidget {
+  final tanggal;
   final String keterangan;
   final String tipe;
   final int jumlah;
   final e;
-  final String nama;
-  final String luaslahan;
-  final String jenislahan;
 
-  ItemCard(this.keterangan, this.tipe, this.jumlah, this.e, this.nama,
-      this.luaslahan, this.jenislahan);
+  ItemCard(
+    this.tanggal,
+    this.keterangan,
+    this.tipe,
+    this.jumlah,
+    this.e,
+  );
 
   @override
   Widget build(BuildContext context) {
     FirebaseFirestore firestore = FirebaseFirestore.instance;
     CollectionReference neraca = firestore.collection('neraca');
+    // var hariini = convertTimeStampToHumanDate(tanggal);
+    // if (hariini == DateFormat.yMMMd().format(DateTime.now())) {
+
+    // }
     return Container(
       width: double.infinity,
       margin: EdgeInsets.only(top: 5, bottom: 5),
@@ -516,13 +683,11 @@ class ItemCard extends StatelessWidget {
                           context,
                           MaterialPageRoute(
                               builder: (context) => EditTransaksi(
-                                  keterangan: keterangan,
-                                  jumlah: jumlah,
-                                  tipe: tipe,
-                                  e: e,
-                                  nama: nama,
-                                  luaslahan: luaslahan,
-                                  jenislahan: jenislahan)));
+                                    keterangan: keterangan,
+                                    jumlah: jumlah,
+                                    tipe: tipe,
+                                    e: e,
+                                  )));
                     }),
               ),
               SizedBox(
@@ -582,4 +747,9 @@ class ItemCard extends StatelessWidget {
       ),
     );
   }
+}
+
+String convertTimeStampToHumanDate(int timeStamp) {
+  var dateToTimeStamp = DateTime.fromMillisecondsSinceEpoch(timeStamp * 1000);
+  return DateFormat('dd/MM/yyyy').format(dateToTimeStamp);
 }
