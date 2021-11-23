@@ -28,8 +28,7 @@ class _LoadingState extends State<Loading> {
         if (data.docs.length == 0) {
           return FormDataLahan();
         } else {
-          return DashboardHome(
-              nama: "izaz", luaslahan: "1000", jenislahan: "padi");
+          return DashboardHome();
         }
       }));
     });
