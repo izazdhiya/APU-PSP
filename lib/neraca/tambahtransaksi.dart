@@ -6,16 +6,9 @@ import 'package:google_fonts/google_fonts.dart';
 // import 'package:flutter_datetime_picker/flutter_datetime_picker.dart';
 
 class TambahTransaksi extends StatefulWidget {
-  final String nama;
-  final String luaslahan;
-  final String jenislahan;
-
-  const TambahTransaksi(
-      {Key? key,
-      required this.nama,
-      required this.luaslahan,
-      required this.jenislahan})
-      : super(key: key);
+  const TambahTransaksi({
+    Key? key,
+  }) : super(key: key);
 
   @override
   _TambahTransaksiState createState() => _TambahTransaksiState();
@@ -224,16 +217,12 @@ class _TambahTransaksiState extends State<TambahTransaksi> {
                                               child: Text(
                                                 "OK",
                                               ),
-                                              onPressed: () => Navigator.pushReplacement(
-                                                  context,
-                                                  MaterialPageRoute(
-                                                      builder: (context) =>
-                                                          NeracaPage(
-                                                              nama: widget.nama,
-                                                              luaslahan: widget
-                                                                  .luaslahan,
-                                                              jenislahan: widget
-                                                                  .jenislahan))))
+                                              onPressed: () =>
+                                                  Navigator.pushReplacement(
+                                                      context,
+                                                      MaterialPageRoute(
+                                                          builder: (context) =>
+                                                              LaporanNeraca())))
                                         ],
                                       );
                                       showDialog(
@@ -261,11 +250,8 @@ class _TambahTransaksiState extends State<TambahTransaksi> {
                                     Navigator.pushReplacement(
                                         context,
                                         MaterialPageRoute(
-                                            builder: (context) => NeracaPage(
-                                                nama: widget.nama,
-                                                luaslahan: widget.luaslahan,
-                                                jenislahan:
-                                                    widget.jenislahan)));
+                                            builder: (context) =>
+                                                LaporanNeraca()));
                                   },
                                   child: Center(
                                     child: Text("Batal",
