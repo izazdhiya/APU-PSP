@@ -10,20 +10,14 @@ class EditTransaksi extends StatefulWidget {
   final String tipe;
   final int jumlah;
   final e;
-  final String nama;
-  final String luaslahan;
-  final String jenislahan;
 
-  const EditTransaksi(
-      {Key? key,
-      required this.keterangan,
-      required this.tipe,
-      required this.jumlah,
-      required this.e,
-      required this.nama,
-      required this.luaslahan,
-      required this.jenislahan})
-      : super(key: key);
+  const EditTransaksi({
+    Key? key,
+    required this.keterangan,
+    required this.tipe,
+    required this.jumlah,
+    required this.e,
+  }) : super(key: key);
 
   @override
   _EditTransaksiState createState() => _EditTransaksiState();
@@ -232,16 +226,12 @@ class _EditTransaksiState extends State<EditTransaksi> {
                                               child: Text(
                                                 "OK",
                                               ),
-                                              onPressed: () => Navigator.pushReplacement(
-                                                  context,
-                                                  MaterialPageRoute(
-                                                      builder: (context) =>
-                                                          NeracaPage(
-                                                              nama: widget.nama,
-                                                              luaslahan: widget
-                                                                  .luaslahan,
-                                                              jenislahan: widget
-                                                                  .jenislahan))))
+                                              onPressed: () =>
+                                                  Navigator.pushReplacement(
+                                                      context,
+                                                      MaterialPageRoute(
+                                                          builder: (context) =>
+                                                              LaporanNeraca())))
                                         ],
                                       );
                                       showDialog(
@@ -269,11 +259,8 @@ class _EditTransaksiState extends State<EditTransaksi> {
                                     Navigator.pushReplacement(
                                         context,
                                         MaterialPageRoute(
-                                            builder: (context) => NeracaPage(
-                                                nama: widget.nama,
-                                                luaslahan: widget.luaslahan,
-                                                jenislahan:
-                                                    widget.jenislahan)));
+                                            builder: (context) =>
+                                                LaporanNeraca()));
                                   },
                                   child: Center(
                                     child: Text("Batal",
