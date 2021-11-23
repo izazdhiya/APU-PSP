@@ -145,13 +145,7 @@ class _FormDataLahanState extends State<FormDataLahan> {
                                                         context,
                                                         MaterialPageRoute(
                                                             builder: (context) =>
-                                                                DashboardHome(
-                                                                  nama: "izaz",
-                                                                  luaslahan:
-                                                                      "1000",
-                                                                  jenislahan:
-                                                                      "padi",
-                                                                )));
+                                                                DashboardHome()));
                                                     users.add({
                                                       'nama': _nama.text,
                                                       'luaslahan': int.tryParse(
