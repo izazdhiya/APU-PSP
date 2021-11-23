@@ -1,59 +1,24 @@
 import 'package:apupsp/home/dailyforecast/dailyforecast1.dart';
 import 'package:apupsp/home/informasi.dart';
 import 'package:apupsp/neraca/neraca.dart';
+import 'package:apupsp/user/user.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
-//import 'package:firebase_database/firebase_database.dart';
-//import 'package:firebase_core/firebase_core.dart';
-//import 'package:shared_preferences/shared_preferences.dart';
 import 'modelweather.dart';
 import 'api.dart';
 
 class DashboardHome extends StatefulWidget {
-  final String nama;
-  final String luaslahan;
-  final String jenislahan;
-
-  const DashboardHome(
-      {Key? key,
-      required this.nama,
-      required this.luaslahan,
-      required this.jenislahan})
-      : super(key: key);
+  const DashboardHome({Key? key}) : super(key: key);
 
   @override
   _DashboardHomeState createState() => _DashboardHomeState();
 }
 
 class _DashboardHomeState extends State<DashboardHome> {
-  //Final referenceDatabase = FirebaseDatabase.instance;
-
-  //var savedData = [];
-
-  //getSavedData() async {
-  //  var data = await Data.getData();
-  //  setState(() {
-  //    savedData = data;
-  //  });
-  //}
-
   List list = [];
-
-  void fetchData() async {
-    var data = await FirebaseFirestore.instance.collection("users").get();
-    //for (int i = 0; i < data.docs.length; i++) {
-    List model = [
-      data.docs[0].data()['nama'],
-      data.docs[0].data()['luaslahan'],
-      data.docs[0].data()['jenislahan'],
-    ];
-    list.add(model);
-    //}
-    setState(() {});
-  }
 
   static var today = new DateTime.now();
 
@@ -61,19 +26,40 @@ class _DashboardHomeState extends State<DashboardHome> {
 
   late Future<Weather> futureWeather;
   late Future<Daily> futureDaily;
-//  late Future<Profil> futureProfil;
 
   @override
   void initState() {
     super.initState();
     futureWeather = fetchWeather();
     futureDaily = fetchDaily();
-    fetchData();
-//    futureProfil = fetchProfil();
+  }
+
+  Future<bool> getBool(datalahan) async {
+    var jenisLahan = datalahan;
+    var weather = await futureWeather;
+    if (jenisLahan == "padi") {
+      if (weather.main.toString() == "Thunderstorm" ||
+          weather.main.toString() == "Clear" ||
+          weather.main.toString() == "Cloud" ||
+          weather.main.toString() == "Drizzle") {
+        return true;
+      } else {
+        return false;
+      }
+    } else {
+      if (weather.main.toString() == "Rain" ||
+          weather.main.toString() == "Thunderstorm") {
+        return true;
+      } else {
+        return false;
+      }
+    }
   }
 
   @override
   Widget build(BuildContext context) {
+    FirebaseFirestore firestore = FirebaseFirestore.instance;
+    CollectionReference users = firestore.collection('users');
     return Scaffold(
         body: Container(
           decoration: BoxDecoration(
@@ -94,41 +80,105 @@ class _DashboardHomeState extends State<DashboardHome> {
                         mainAxisAlignment: MainAxisAlignment.center,
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Text(
-                            'Halo ' + widget.nama + '!',
-                            style: GoogleFonts.poppins(
-                                textStyle: TextStyle(
-                                    color: Color(0xFFFAFAFA),
-                                    fontSize: 20,
-                                    fontWeight: FontWeight.w600)),
+                          StreamBuilder<QuerySnapshot>(
+                            stream: users.snapshots(),
+                            builder: (context, snapshot) {
+                              if (snapshot.hasData) {
+                                list.add(snapshot.data!.docs
+                                    .map((e) => [
+                                          e['nama'],
+                                          e['luaslahan'],
+                                          e['jenislahan']
+                                        ])
+                                    .toList());
+                                return Text(
+                                  'Halo ' + list[0][0][0] + '!',
+                                  style: GoogleFonts.poppins(
+                                      textStyle: TextStyle(
+                                          color: Color(0xFFFAFAFA),
+                                          fontSize: 20,
+                                          fontWeight: FontWeight.w600)),
+                                );
+                              } else {
+                                return Text('User',
+                                    style: GoogleFonts.poppins(
+                                        textStyle: TextStyle(
+                                            color: Color(0xFFFAFAFA),
+                                            fontSize: 20,
+                                            fontWeight: FontWeight.w600)));
+                              }
+                            },
                           ),
-                          Container(
-                            child: Row(
-                              children: [
-                                Image(
-                                  image: AssetImage("images/info.png"),
-                                ),
-                                TextButton(
-                                  onPressed: () {
-                                    Navigator.push(
-                                        context,
-                                        MaterialPageRoute(
-                                            builder: (context) => InfoSaran(
-                                                  luaslahan: widget.luaslahan,
-                                                  jenislahan: widget.jenislahan,
-                                                  //cuaca: cuaca,
-                                                )));
-                                  },
-                                  child: Text("Peringatan",
-                                      style: GoogleFonts.poppins(
-                                          textStyle: TextStyle(
-                                              color: Color(0xFFF6E120),
-                                              fontSize: 14,
-                                              fontStyle: FontStyle.italic,
-                                              fontWeight: FontWeight.w500))),
-                                )
-                              ],
-                            ),
+                          StreamBuilder<QuerySnapshot>(
+                            stream: users.snapshots(),
+                            builder: (context, snapshot) {
+                              if (snapshot.hasData) {
+                                List myDocCount = snapshot.data!.docs
+                                    .map((e) => [
+                                          e['nama'],
+                                          e['luaslahan'],
+                                          e['jenislahan']
+                                        ])
+                                    .toList();
+                                var datalahan = [];
+                                for (var i in myDocCount) {
+                                  datalahan.add(i);
+                                }
+                                return FutureBuilder<bool?>(
+                                    future: getBool(datalahan[0][2]),
+                                    builder: (context, snapshot) {
+                                      if (snapshot.connectionState ==
+                                          ConnectionState.waiting) {
+                                        return Container();
+                                      }
+                                      return Visibility(
+                                          visible: snapshot.data!,
+                                          child: Container(
+                                            child: Row(
+                                              children: [
+                                                Image(
+                                                  image: AssetImage(
+                                                      "images/info.png"),
+                                                ),
+                                                TextButton(
+                                                  onPressed: () {
+                                                    Navigator.push(
+                                                        context,
+                                                        MaterialPageRoute(
+                                                            builder:
+                                                                (context) =>
+                                                                    InfoSaran(
+                                                                      luaslahan:
+                                                                          list[0][0]
+                                                                              [
+                                                                              1],
+                                                                      jenislahan:
+                                                                          list[0][0]
+                                                                              [
+                                                                              2],
+                                                                    )));
+                                                  },
+                                                  child: Text("Peringatan",
+                                                      style: GoogleFonts.poppins(
+                                                          textStyle: TextStyle(
+                                                              color: Color(
+                                                                  0xFFF6E120),
+                                                              fontSize: 14,
+                                                              fontStyle:
+                                                                  FontStyle
+                                                                      .italic,
+                                                              fontWeight:
+                                                                  FontWeight
+                                                                      .w500))),
+                                                )
+                                              ],
+                                            ),
+                                          ));
+                                    });
+                              } else {
+                                return Container();
+                              }
+                            },
                           ),
                         ],
                       ),
@@ -930,43 +980,21 @@ class _DashboardHomeState extends State<DashboardHome> {
                       Navigator.push(
                           context,
                           MaterialPageRoute(
-                              builder: (context) => NeracaPage(
-                                  nama: widget.nama,
-                                  luaslahan: widget.luaslahan,
-                                  jenislahan: widget.jenislahan)));
+                              builder: (context) => LaporanNeraca()));
                     }),
                 MaterialButton(
                     height: 50,
                     minWidth: 50,
                     textColor: Color(0xFFFAFAFA),
                     child: Icon(Icons.person, size: 30),
-                    onPressed: () {})
+                    onPressed: () {
+                      Navigator.push(context,
+                          MaterialPageRoute(builder: (context) => UserPage()));
+                    })
               ],
             ),
           ),
-        )
-
-//      BottomNavigationBar(
-//        items: const <BottomNavigationBarItem>[
-//          BottomNavigationBarItem(
-//            icon: Icon(Icons.home),
-//            label: 'Home',
-//          ),
-//          BottomNavigationBarItem(
-//            icon: Icon(Icons.money),
-//            label: 'Keuangan',
-//          ),
-//          BottomNavigationBarItem(
-//            icon: Icon(Icons.person),
-//            label: 'Profil',
-//          ),
-//        ],
-//        currentIndex: 0,
-//        selectedItemColor: Color(0xFF3391B7),
-//        unselectedItemColor: Colors.grey,
-//        showUnselectedLabels: true,
-//      ),
-        );
+        ));
   }
 }
 
