@@ -1,3 +1,4 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -7,7 +8,7 @@ import 'dart:convert';
 import 'api.dart';
 
 class InfoSaran extends StatefulWidget {
-  final String luaslahan;
+  final int luaslahan;
   final String jenislahan;
   //final List cuaca;
 
@@ -150,6 +151,8 @@ class _InfoSaranState extends State<InfoSaran> {
 
   @override
   Widget build(BuildContext context) {
+    FirebaseFirestore firestore = FirebaseFirestore.instance;
+    CollectionReference users = firestore.collection('users');
     return Scaffold(
       appBar: AppBar(
         backgroundColor: Colors.transparent,
@@ -261,18 +264,44 @@ class _InfoSaranState extends State<InfoSaran> {
                                     textStyle: TextStyle(
                                         fontSize: 20,
                                         fontWeight: FontWeight.w500))),
-                            Text(widget.luaslahan + " m²",
-                                style: GoogleFonts.poppins(
-                                    textStyle: TextStyle(
-                                        color: Color(0xFF4B4B4B),
-                                        fontSize: 16,
-                                        fontWeight: FontWeight.w500))),
-                            Text(widget.jenislahan,
-                                style: GoogleFonts.poppins(
-                                    textStyle: TextStyle(
-                                        color: Color(0xFF4B4B4B),
-                                        fontSize: 16,
-                                        fontWeight: FontWeight.w500)))
+                            StreamBuilder<QuerySnapshot>(
+                              stream: users.snapshots(),
+                              builder: (context, snapshot) {
+                                if (snapshot.hasData) {
+                                  List myDocCount = snapshot.data!.docs
+                                      .map((e) => [
+                                            e['nama'],
+                                            e['luaslahan'],
+                                            e['jenislahan']
+                                          ])
+                                      .toList();
+                                  return Column(
+                                    children: [
+                                      Text(myDocCount[0][1].toString() + " m²",
+                                          style: GoogleFonts.poppins(
+                                              textStyle: TextStyle(
+                                                  color: Color(0xFF4B4B4B),
+                                                  fontSize: 16,
+                                                  fontWeight:
+                                                      FontWeight.w500))),
+                                      Text(myDocCount[0][2],
+                                          style: GoogleFonts.poppins(
+                                              textStyle: TextStyle(
+                                                  color: Color(0xFF4B4B4B),
+                                                  fontSize: 16,
+                                                  fontWeight: FontWeight.w500)))
+                                    ],
+                                  );
+                                } else {
+                                  return Text('Loading',
+                                      style: GoogleFonts.poppins(
+                                          textStyle: TextStyle(
+                                              color: Color(0xFF4B4B4B),
+                                              fontSize: 16,
+                                              fontWeight: FontWeight.w600)));
+                                }
+                              },
+                            ),
                           ])),
                 ],
               ),
