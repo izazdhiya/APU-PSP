@@ -3,20 +3,24 @@ class Weather {
   String description;
   String icon;
   String main;
+  //double rain = 0.0;
 
   Weather({
     required this.temp,
     required this.description,
     required this.icon,
     required this.main,
+    //required this.rain,
   });
 
   factory Weather.fromJson(Map json) {
     return Weather(
-        temp: json['main']['temp'],
-        description: json['weather'][0]['description'],
-        icon: json['weather'][0]['icon'],
-        main: json['weather'][0]['main']);
+      temp: json['main']['temp'],
+      description: json['weather'][0]['description'],
+      icon: json['weather'][0]['icon'],
+      main: json['weather'][0]['main'],
+      //rain: json['weather']['rain']
+    );
   }
 }
 
