@@ -5,16 +5,16 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
-class UserPage extends StatefulWidget {
-  const UserPage({
+class Profil extends StatefulWidget {
+  const Profil({
     Key? key,
   }) : super(key: key);
 
   @override
-  _UserPageState createState() => _UserPageState();
+  _ProfilState createState() => _ProfilState();
 }
 
-class _UserPageState extends State<UserPage> {
+class _ProfilState extends State<Profil> {
   String luaslahan = "";
   String jenislahan = "";
 
