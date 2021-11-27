@@ -593,7 +593,7 @@ class _LaporanNeracaState extends State<LaporanNeraca> {
                     child: Icon(Icons.person, size: 30),
                     onPressed: () {
                       Navigator.push(context,
-                          MaterialPageRoute(builder: (context) => UserPage()));
+                          MaterialPageRoute(builder: (context) => Profil()));
                     })
               ],
             ),
