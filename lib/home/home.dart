@@ -989,7 +989,7 @@ class _DashboardHomeState extends State<DashboardHome> {
                     child: Icon(Icons.person, size: 30),
                     onPressed: () {
                       Navigator.push(context,
-                          MaterialPageRoute(builder: (context) => UserPage()));
+                          MaterialPageRoute(builder: (context) => Profil()));
                     })
               ],
             ),
