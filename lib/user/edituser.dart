@@ -180,7 +180,7 @@ class _EditUserState extends State<EditUser> {
                                                             MaterialPageRoute(
                                                                 builder:
                                                                     (context) =>
-                                                                        UserPage())))
+                                                                        Profil())))
                                               ],
                                             );
                                             showDialog(
